@@ -1,7 +1,7 @@
 # M09 UF3 Practice
 ## Project description
 
-Console application to create files hashes
+Console application to create file hashes
 
 ## Project structure
 
