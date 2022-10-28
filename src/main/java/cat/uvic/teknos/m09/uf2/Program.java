@@ -16,12 +16,16 @@ public class Program {
     private static boolean follow = true;
     private static Scanner in = new Scanner(System.in);
 
+    private static HashParameters hashParameters;
+
     public static void main(String[] args) throws NoSuchAlgorithmException, URISyntaxException, IOException {
         var properties = new Properties();
         properties.load(Program.class.getResourceAsStream("/hash.properties"));
-        var hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
+        hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
 
         Thread th = new Thread(Program::th);
+
+        th.start();
 
         while (follow) {
             System.out.println("Type the path of the file you want to hash");
@@ -30,6 +34,7 @@ public class Program {
 
             askToFollow();
         }
+        th.stop();
         System.out.println("Bye!");
     }
 
@@ -37,9 +42,13 @@ public class Program {
         Properties prop = new Properties();
         try{
             while (true){
-                Thread.sleep(60000);
+                Thread.sleep(6000);
 
-                prop.load(new FileInputStream("src/main/resources/hash.properties"));
+                prop.load(new FileInputStream("D:\\source\\repos\\m09uf2practice\\build\\resources\\main\\hash.properties"));
+
+                if (prop.getProperty("salt").equals(hashParameters.getSalt())){
+                    hashParameters = new HashParameters(prop.getProperty("algorithm"), prop.getProperty("salt"));
+                }
             }
         }
         catch (InterruptedException e){
