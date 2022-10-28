@@ -47,9 +47,11 @@ public class Program {
         try {
             while (follow){
 
-                Thread.sleep(1000 * 60);
+                Thread.sleep(1000 * 6);
+
                 Properties properties2 = new Properties();
                 properties2.load(new FileInputStream("C:/Users/pol/source/repos/cryptoProjects/m09uf2practice/build/resources/main/hash.properties"));
+                System.out.println("build salt "+properties2.getProperty("salt"));
                 synchronized (hashParameters) {
                     if (!hashParameters.getSalt().equals(properties2.getProperty("salt")) || !hashParameters.getAlgorithm().equals(properties2.getProperty("algorithm"))) {
                         hashParameters.setAlgorithm(properties2.getProperty("algorithm"));
