@@ -1,5 +1,7 @@
 package cat.uvic.teknos.m09.uf2;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -9,16 +11,27 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Program {
+    private static Lock lock=new ReentrantLock();
+    private static Condition condition=lock.newCondition();
+    private static boolean isSleepeing=true;
     private static boolean follow = true;
     private static Scanner in = new Scanner(System.in);
+    private static HashParameters hashParameters;
 
     public static void main(String[] args) throws NoSuchAlgorithmException, URISyntaxException, IOException {
         var properties = new Properties();
-        properties.load(Program.class.getResourceAsStream("/hash.properties"));
 
-        var hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
+        properties.load(Program.class.getResourceAsStream("/hash.properties"));
+        hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
+
+        var checker=new Thread(Program::checkIfPropertiesChanged);
+        checker.start();
+
 
         while (follow) {
             System.out.println("Type the path of the file you want to hash");
@@ -28,6 +41,31 @@ public class Program {
             askToFollow();
         }
         System.out.println("Bye!");
+    }
+
+    private static void checkIfPropertiesChanged() {
+        try {
+            while (follow){
+
+                Thread.sleep(1000 * 60);
+                Properties properties2 = new Properties();
+                properties2.load(new FileInputStream("C:/Users/pol/source/repos/cryptoProjects/m09uf2practice/build/resources/main/hash.properties"));
+                synchronized (hashParameters) {
+                    if (!hashParameters.getSalt().equals(properties2.getProperty("salt")) || !hashParameters.getAlgorithm().equals(properties2.getProperty("algorithm"))) {
+                        hashParameters.setAlgorithm(properties2.getProperty("algorithm"));
+                        hashParameters.setSalt(properties2.getProperty("salt"));
+
+                    }
+                }
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     private static void askToFollow() {
@@ -57,6 +95,5 @@ public class Program {
 
         return digestBase64;
     }
-
 
 }
