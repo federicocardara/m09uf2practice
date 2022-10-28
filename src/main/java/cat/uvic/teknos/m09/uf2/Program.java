@@ -13,35 +13,19 @@ import java.util.*;
 public class Program {
     private static boolean follow = true;
     private static Scanner in = new Scanner(System.in);
-    private static List<String> propertiesList;
+
+    private static HashParameters hashParameters;
 
 
     public static void main(String[] args) throws NoSuchAlgorithmException, URISyntaxException, IOException {
         var properties = new Properties();
         properties.load(Program.class.getResourceAsStream("/hash.properties"));
 
-        var hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
+        var thread = new Thread(Program::verifyChanges);
 
-        properties.load(Program.class.getResourceAsStream("/hash.properties"));
-        Thread thread = new Thread(() -> {
-            try {
-                properties.load(new FileInputStream("build/resources/main/hash.properties"));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            while (follow) {
-                try {
-                    verifyChanges(properties, hashParameters);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                try {
-                    Thread.sleep(60*1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
+        thread.start();
+
+        hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
         while (follow) {
             System.out.println("Type the path of the file you want to hash");
             System.out.println("Digest: " + getDigest(in.nextLine(), hashParameters));
@@ -80,23 +64,39 @@ public class Program {
 
         return digestBase64;
     }
-    /*private static void checkProperties(Properties prop, HashParameters hashParameters) throws IOException {
-        prop.load(Program.class.getResourceAsStream("/hash.properties"));
-        hashParameters.setAlgorithm(prop.getProperty("algorithm"));
-        hashParameters.setSalt(prop.getProperty("salt"));
+    private static void verifyChanges() {
+        while(follow){
+            try {
+                Thread.sleep(60*1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            var properties = new Properties();
+            try {
+                properties = loadProperties();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            if(!properties.getProperty("salt").equals(hashParameters.getSalt()) || !properties.getProperty("algorithm").equals(hashParameters.getAlgorithm())){
+                try {
+                    reloadHashParameters();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
 
-        var salt = prop.getProperty("salt");
+        }
     }
-    private static void verifyPropertis(Properties properties, HashParameters hashParameters) throws IOException {
-        properties.load(Program.class.getResourceAsStream("/hash.properties"));
-        hashParameters.setAlgorithm(properties.getProperty("algorithm"));
+    private static void reloadHashParameters() throws IOException {
+        var properties = new Properties();
+        properties =  loadProperties();
         hashParameters.setSalt(properties.getProperty("salt"));
+        hashParameters.setAlgorithm(properties.getProperty("algorithm"));
+    }
 
-        var salt = properties.getProperty("salt");
-    }*/
-    private static void verifyChanges(Properties properties, HashParameters hashParameters) throws IOException {
+    private static Properties loadProperties() throws IOException {
+        var properties = new Properties();
         properties.load(Program.class.getResourceAsStream("/hash.properties"));
-        hashParameters.setAlgorithm(properties.getProperty("algorithm"));
-        hashParameters.setSalt(properties.getProperty("salt"));
+        return properties;
     }
 }
