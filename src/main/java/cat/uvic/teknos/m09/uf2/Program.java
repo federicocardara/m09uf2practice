@@ -19,10 +19,11 @@ public class Program {
 
     public static void main(String[] args) throws NoSuchAlgorithmException, URISyntaxException, IOException {
         Properties properties=new Properties();
-        properties.load(new FileInputStream("src/main/resources/hash.properties"));
+        properties.load(Program.class.getResourceAsStream("/hash.properties"));
         hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
 
         var thread = new Thread(Program::thread);
+        thread.start();
         while (follow) {
             System.out.println("Type the path of the file you want to hash");
             System.out.println("Digest: " + getDigest(in.nextLine(), hashParameters));
@@ -63,7 +64,7 @@ public class Program {
     }
     private static void thread(){
         try {
-            Thread.sleep(10*1000);
+            Thread.sleep(20*1000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -73,10 +74,9 @@ public class Program {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        if (!properties.getProperty("salt").equals(hashParameters.getSalt())){
-            hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
-            System.out.println("Program enters if");
-        }
+        hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
+        System.out.println("Program enters if");
+
 
     }
 
