@@ -1,5 +1,6 @@
 package cat.uvic.teknos.m09.uf2;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -14,12 +15,14 @@ public class Program {
     private static boolean follow = true;
     private static Scanner in = new Scanner(System.in);
 
+    private static HashParameters hashParameters;
+
     public static void main(String[] args) throws NoSuchAlgorithmException, URISyntaxException, IOException {
-        var properties = new Properties();
-        properties.load(Program.class.getResourceAsStream("/hash.properties"));
+        Properties properties=new Properties();
+        properties.load(new FileInputStream("src/main/resources/hash.properties"));
+        hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
 
-        var hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
-
+        var thread = new Thread(Program::thread);
         while (follow) {
             System.out.println("Type the path of the file you want to hash");
             System.out.println("Digest: " + getDigest(in.nextLine(), hashParameters));
@@ -28,6 +31,7 @@ public class Program {
             askToFollow();
         }
         System.out.println("Bye!");
+
     }
 
     private static void askToFollow() {
@@ -57,6 +61,23 @@ public class Program {
 
         return digestBase64;
     }
+    private static void thread(){
+        try {
+            Thread.sleep(10*1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        var properties = new Properties();
+        try {
+            properties.load(Program.class.getResourceAsStream("/hash.properties"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (!properties.getProperty("salt").equals(hashParameters.getSalt())){
+            hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
+            System.out.println("Program enters if");
+        }
 
+    }
 
 }
