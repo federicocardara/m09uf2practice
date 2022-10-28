@@ -1,5 +1,7 @@
 package cat.uvic.teknos.m09.uf2;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -17,8 +19,9 @@ public class Program {
     public static void main(String[] args) throws NoSuchAlgorithmException, URISyntaxException, IOException {
         var properties = new Properties();
         properties.load(Program.class.getResourceAsStream("/hash.properties"));
-
         var hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
+
+        Thread th = new Thread(Program::th);
 
         while (follow) {
             System.out.println("Type the path of the file you want to hash");
@@ -28,6 +31,29 @@ public class Program {
             askToFollow();
         }
         System.out.println("Bye!");
+    }
+
+    private static void th(){
+        Properties prop = new Properties();
+        try{
+            while (true){
+                Thread.sleep(60000);
+
+                prop.load(new FileInputStream("src/main/resources/hash.properties"));
+            }
+        }
+        catch (InterruptedException e){
+            try {
+                throw new InterruptedException();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void askToFollow() {
