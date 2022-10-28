@@ -16,9 +16,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Program {
-    private static Lock lock=new ReentrantLock();
-    private static Condition condition=lock.newCondition();
-    private static boolean isSleepeing=true;
     private static boolean follow = true;
     private static Scanner in = new Scanner(System.in);
     private static HashParameters hashParameters;
@@ -47,11 +44,10 @@ public class Program {
         try {
             while (follow){
 
-                Thread.sleep(1000 * 6);
+                Thread.sleep(1000 * 60);
 
                 Properties properties2 = new Properties();
                 properties2.load(new FileInputStream("C:/Users/pol/source/repos/cryptoProjects/m09uf2practice/build/resources/main/hash.properties"));
-                System.out.println("build salt "+properties2.getProperty("salt"));
                 synchronized (hashParameters) {
                     if (!hashParameters.getSalt().equals(properties2.getProperty("salt")) || !hashParameters.getAlgorithm().equals(properties2.getProperty("algorithm"))) {
                         hashParameters.setAlgorithm(properties2.getProperty("algorithm"));
