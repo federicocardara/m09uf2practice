@@ -73,7 +73,7 @@ public class Program implements Runnable {
                 hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
                 lock.unlock();
 
-                Thread.sleep(20 * 1000);
+                Thread.sleep(60 * 1000);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
