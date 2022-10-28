@@ -16,7 +16,7 @@ The main class is called Program. When run, it
 
 ## TODO
 
-Check every minute if the file _hash.properties_ has changed. If so update the hashing configuration 
+Check every minute if the file _hash.properties_ has changed. If so, update the hashing configuration 
 
 ## Versions
 
