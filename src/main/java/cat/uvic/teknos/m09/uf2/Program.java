@@ -28,6 +28,8 @@ public class Program {
             askToFollow();
         }
         System.out.println("Bye!");
+
+
     }
 
     private static void askToFollow() {
