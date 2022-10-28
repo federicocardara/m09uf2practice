@@ -1,18 +1,20 @@
 package cat.uvic.teknos.m09.uf2;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Properties;
-import java.util.Scanner;
+import java.util.*;
 
 public class Program {
     private static boolean follow = true;
     private static Scanner in = new Scanner(System.in);
+    private static List<String> propertiesList;
+
 
     public static void main(String[] args) throws NoSuchAlgorithmException, URISyntaxException, IOException {
         var properties = new Properties();
@@ -20,12 +22,33 @@ public class Program {
 
         var hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
 
+        properties.load(Program.class.getResourceAsStream("/hash.properties"));
+        Thread thread = new Thread(() -> {
+            try {
+                properties.load(new FileInputStream("build/resources/main/hash.properties"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            while (follow) {
+                try {
+                    verifyChanges(properties, hashParameters);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    Thread.sleep(60*1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
         while (follow) {
             System.out.println("Type the path of the file you want to hash");
             System.out.println("Digest: " + getDigest(in.nextLine(), hashParameters));
             System.out.println("Salt: " + hashParameters.getSalt());
 
             askToFollow();
+
         }
         System.out.println("Bye!");
     }
@@ -52,11 +75,28 @@ public class Program {
 
             var base64Encoder = Base64.getEncoder();
 
-            digestBase64 =  base64Encoder.encodeToString(digest);
+            digestBase64 = base64Encoder.encodeToString(digest);
         }
 
         return digestBase64;
     }
+    /*private static void checkProperties(Properties prop, HashParameters hashParameters) throws IOException {
+        prop.load(Program.class.getResourceAsStream("/hash.properties"));
+        hashParameters.setAlgorithm(prop.getProperty("algorithm"));
+        hashParameters.setSalt(prop.getProperty("salt"));
 
+        var salt = prop.getProperty("salt");
+    }
+    private static void verifyPropertis(Properties properties, HashParameters hashParameters) throws IOException {
+        properties.load(Program.class.getResourceAsStream("/hash.properties"));
+        hashParameters.setAlgorithm(properties.getProperty("algorithm"));
+        hashParameters.setSalt(properties.getProperty("salt"));
 
+        var salt = properties.getProperty("salt");
+    }*/
+    private static void verifyChanges(Properties properties, HashParameters hashParameters) throws IOException {
+        properties.load(Program.class.getResourceAsStream("/hash.properties"));
+        hashParameters.setAlgorithm(properties.getProperty("algorithm"));
+        hashParameters.setSalt(properties.getProperty("salt"));
+    }
 }
