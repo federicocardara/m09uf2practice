@@ -64,7 +64,7 @@ public class Program {
     }
     private static void thread(){
         try {
-            Thread.sleep(20*1000);
+            Thread.sleep(60*1000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
