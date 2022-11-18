@@ -4,7 +4,7 @@ import java.io.*;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-public class SaltGenerator {
+public class  SaltGenerator {
     public static void main(String[] args) throws IOException {
         var iterations = 20;
         if (args.length == 1) {

@@ -1,6 +1,8 @@
 package cat.uvic.teknos.m09.uf2;
 
-import java.io.IOException;
+import cat.uvic.teknos.m09.uf2.utilities.SaltGenerator;
+
+import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,14 +14,16 @@ import java.util.Scanner;
 
 public class Program {
     private static boolean follow = true;
+    private static HashParameters hashParameters;
     private static Scanner in = new Scanner(System.in);
 
     public static void main(String[] args) throws NoSuchAlgorithmException, URISyntaxException, IOException {
         var properties = new Properties();
         properties.load(Program.class.getResourceAsStream("/hash.properties"));
 
-        var hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
-
+        hashParameters = new HashParameters(properties.getProperty("algorithm"), properties.getProperty("salt"));
+        var thread=new Thread(Program::detectChange);
+        thread.start();
         while (follow) {
             System.out.println("Type the path of the file you want to hash");
             System.out.println("Digest: " + getDigest(in.nextLine(), hashParameters));
@@ -27,6 +31,7 @@ public class Program {
 
             askToFollow();
         }
+
         System.out.println("Bye!");
     }
 
@@ -57,6 +62,34 @@ public class Program {
 
         return digestBase64;
     }
+    /* detectChange()
+    * checks to see if the parameters in the hash.properties file have been changed during the program execution
+    *
+    * */
+    private static void detectChange(){
+        while(follow){
+            try {
+                //the thread only awakens once every minute
+                Thread.sleep(10000);
+
+                //Get properties file
+                Properties hash = new Properties();
+                hash.load(Program.class.getResourceAsStream("/hash.properties"));
+                String algorithm=hash.getProperty("algorithm");
+                String salt=hash.getProperty("salt");
 
 
+               if(!hashParameters.getAlgorithm().equals(algorithm)){
+                    System.out.println("algorithm");
+                    hashParameters.setAlgorithm(algorithm);
+                }
+                if(!hashParameters.getSalt().equals(salt)){
+                    System.out.println("salt");
+                    hashParameters.setSalt(salt);
+                }
+            } catch (InterruptedException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
