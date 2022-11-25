@@ -76,21 +76,23 @@ public class Program {
     }
 
     private static String getDigest(String path, HashParameters parameters) throws NoSuchAlgorithmException, URISyntaxException, IOException {
-        String digestBase64 = null;
-        var pathObj = Paths.get(path);
-        if (Files.exists(pathObj)) {
-            var data = Files.readAllBytes(pathObj);
+            String digestBase64 = null;
+            var pathObj = Paths.get(path);
+            if (Files.exists(pathObj)) {
+                var data = Files.readAllBytes(pathObj);
 
-            var messageDigest = MessageDigest.getInstance(parameters.getAlgorithm());
-            messageDigest.update(parameters.getSaltBytes());
+                var messageDigest = MessageDigest.getInstance(parameters.getAlgorithm());
+                messageDigest.update(parameters.getSaltBytes());
 
-            var digest = messageDigest.digest(data);
+                var digest = messageDigest.digest(data);
 
-            var base64Encoder = Base64.getEncoder();
+                var base64Encoder = Base64.getEncoder();
 
-            digestBase64 =  base64Encoder.encodeToString(digest);
+                digestBase64 = base64Encoder.encodeToString(digest);
+
+
+            return digestBase64;
         }
-
         return digestBase64;
     }
 
