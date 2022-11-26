@@ -1,5 +1,7 @@
 package cat.uvic.teknos.m09.uf2;
 
+import cat.uvic.teknos.m09.uf2.exceptions.M09Uf2PracticeException;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,19 +19,25 @@ public class Program {
     private static Scanner in = new Scanner(System.in);
     private static HashParameters hashParameters;
 
-    public static void main(String[] args) throws NoSuchAlgorithmException, URISyntaxException, IOException, InterruptedException {
+    public static void main(String[] args){
 
-        var checker=new Thread(Program::checkIfPropertiesChanged);
-        checker.start();
-        Thread.sleep(2000);
-        while (follow) {
-            System.out.println("Type the path of the file you want to hash");
-            System.out.println("Digest: " + getDigest(in.nextLine(), hashParameters));
-            System.out.println("Salt: " + hashParameters.getSalt());
 
-            askToFollow();
+        try {
+            var checker=new Thread(Program::checkIfPropertiesChanged);
+            checker.start();
+            Thread.sleep(2000);
+            while (follow) {
+                System.out.println("Type the path of the file you want to hash");
+                System.out.println("Digest: " + getDigest(in.nextLine(), hashParameters));
+                System.out.println("Salt: " + hashParameters.getSalt());
+
+                askToFollow();
+            }
+            System.out.println("Bye!");
+        } catch (InterruptedException e) {
+            throw new M09Uf2PracticeException("A problem occurred while calling static method 'sleep' of 'Thread class'",e);
         }
-        System.out.println("Bye!");
+
     }
 
     private static void checkIfPropertiesChanged() {
@@ -45,11 +53,9 @@ public class Program {
 
             }
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new M09Uf2PracticeException("A problem occurred while calling static method 'sleep' of 'Thread class'",e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new M09Uf2PracticeException("A problem occurred while loading the properties from the 'hash.properties' file",e);
         }
 
     }
@@ -63,7 +69,8 @@ public class Program {
         }
     }
 
-    private static String getDigest(String path, HashParameters parameters) throws NoSuchAlgorithmException, URISyntaxException, IOException {
+    private static String getDigest(String path, HashParameters parameters) {
+        try{
             String digestBase64 = null;
             synchronized (Program.class) {
                 var pathObj = Paths.get(path);
@@ -84,6 +91,11 @@ public class Program {
                 }
                 return digestBase64;
             }
+        } catch (NoSuchAlgorithmException e) {
+            throw new M09Uf2PracticeException("A problem occurred while trying to use the algorithm of the 'hash.properties', check if the name is written correctly.",e);
+        } catch (IOException e) {
+            throw new RuntimeException("A problem occurred while reading the given file",e);
+        }
     }
 
 }
